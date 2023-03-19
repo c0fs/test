@@ -1,0 +1,188 @@
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))()
+--------------------------------------------------
+local Window = Library.CreateLib("Restaurant Tycoon 2 GUI", "Synapse")
+--------------------------------------------------
+local Tab = Window:NewTab("Informations")
+
+local Section = Tab:NewSection("Made By Kerem42DNMZ Paid Gui")
+local Section = Tab:NewSection("Dont Sell")
+local Section = Tab:NewSection("Toogle Menu Right CTRL")
+--First
+local First = Window:NewTab("First")
+local Section = First:NewSection("First Execute")
+local FirstSection = First:NewSection("First")
+
+FirstSection:NewButton("First Execute This", "", function()
+if not getgenv().object then
+    getgenv().object = {
+    child = {},
+    descendant = {},
+    check = {},
+    Local_Connections = {}
+} elseif getgenv().object.Local_Connections == nil then
+    getgenv().object.Local_Connections = {
+} end do
+    local self,getObject = getgenv().object,Instance.new("Part")
+    
+    self.cget = getObject.GetChildren
+    self.dget = getObject.GetDescendants
+    
+    print("Disconnecting Old Connections") do
+        for i,v in pairs(self.Local_Connections) do
+            v:Disconnect()
+        end
+        self.Local_Connections = {}
+    end
+    
+    print("Loading Child Module") do
+
+        
+        function self.child.find(parent,name)
+            for _, v in pairs(self.cget(parent)) do
+                if v.Name == name then
+                    return v
+                end
+            end
+        end
+        
+        function self.child.foreach(parent,name,func)
+            for _, v in pairs(self.cget(parent)) do
+                if v.Name == name then
+                    func(v)
+                end
+            end
+        end
+        
+        function self.child.on_add(parent,func)
+            local code = Random.new(tick()+parent.Name:byte()):NextNumber()
+            self.Local_Connections[parent.Name..code] = parent.ChildAdded:Connect(func)
+            return self.Local_Connections[parent.Name..code],code
+        end
+    
+    end
+    
+    print("Loading Descendant Module") do
+        function self.descendant.find(parent,name)
+            for _, v in pairs(self.dget(parent)) do
+                if v.Name == name then
+                    return v
+                end
+            end
+        end
+        
+        function self.descendant.foreach(parent,name,func)
+            for _, v in pairs(self.dget(parent)) do
+                if v.Name == name then
+                    func(v)
+                end
+            end
+        end
+        
+        function self.descendant.on_add(parent,func)
+            local code = Random.new(tick()+parent.Name:byte()):NextNumber()
+            self.Local_Connections[parent.Name..code] = parent.DescendantAdded:Connect(func)
+            return self.Local_Connections[parent.Name..code],code
+        end
+    end
+    
+    print("Loading Check Module") do
+        function self.check.it(proper,func)
+            if proper then func() end
+        end
+    end
+end
+end)
+--Main
+local Tab = Window:NewTab("Main")
+local Section = Tab:NewSection("Main")
+
+Section:NewButton("NPC Instant Cook & Reach", "Fast Cook&Reach for NPC's", function()
+local chiefInstantCook = true
+local npcReach = true
+
+local Client = game.Players.LocalPlayer
+local PS = Client.PlayerScripts
+local Module = require(PS.ClientMain.Replications.Workers.DummyWalkSequence)
+local Worker = require(PS.CookingNew.WorkerComponents.WorkerDefault)
+local M1 = require(PS.ClientMain.Replications.Customers.GetNPCFolder)
+
+
+
+if npcReach then
+   Module.Run = function(data)
+       return (data.completeCallback or task.wait)()
+   end
+end
+
+if chiefInstantCook then
+   Worker.event = function(...)
+      local args = {...}
+      local npc = M1.GetNPCFolder(args[1]).ClientWorkers:FindFirstChild(args[2])
+      local M2 = game.ReplicatedStorage.MiscModules.CookingSharedCharacter:FindFirstChild(args[4])
+      if M2 then
+          require(M2).finishInteract(npc,args[3],args[4])
+      end
+      return
+   end
+end
+end)
+Section:NewButton("Auto Collect", "Auto Collect Money NOT TİPS", function()
+local child = object.child
+local descendant = object.descendant
+local check = object.check
+
+local Tycoon = game.Players.LocalPlayer.Tycoon.Value
+descendant.foreach(Tycoon.Items.OftenFiltered.Surface,"Bill",function(Bill)
+  local Settings = {
+          ["name"] = "CollectBill",
+          ["model"] = Bill.Parent
+  }
+ 
+  game.ReplicatedStorage.Events.ClientTycoonInput:FireServer(Tycoon,Settings)
+end)
+
+local Connection,Code = descendant.on_add(Tycoon.Items.OftenFiltered.Surface,function(Bill)
+  check.it(Bill.Name == "Bill",function()
+      local Settings = {
+              ["name"] = "CollectBill",
+              ["model"] = Bill.Parent
+      }
+     
+      game.ReplicatedStorage.Events.ClientTycoonInput:FireServer(Tycoon,Settings)
+  end)
+end)
+end)
+Section:NewButton("Player Instant Cook", "Fast Cook For Player", function()
+
+local Cooking = game.Players.LocalPlayer.PlayerScripts.CookingNew
+local CookProgress = require(Cooking.CookProgress)
+local MultiClick = require(Cooking.InputDetectors.MultiClick)
+local MouseMovement = require(Cooking.InputDetectors.MouseMovement)
+local MouseSpin = require(Cooking.InputDetectors.MouseSpin)
+
+local run = CookProgress.run
+CookProgress.run = function(...)
+  local ARGS = {...}
+  ARGS[3] = 0
+  return run(unpack(ARGS))
+end
+
+MultiClick.start = function(...)
+  ({...})[3]()
+end
+
+MouseMovement.start = function(...)
+  ({...})[3]()
+end
+
+MouseSpin.start = function(...)
+  ({...})[3]()
+end
+end)
+
+--Son
+local Tab = Window:NewTab("Disguise")
+local Section = Tab:NewSection("Disguise")
+Section:NewKeybind("Disguise Menu", "", Enum.KeyCode.RightControl, function()
+	Library:ToggleUI()
+end)
